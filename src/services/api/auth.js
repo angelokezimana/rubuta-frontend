@@ -19,6 +19,10 @@ const loginUser = async (email, password) => {
         const response = await tokenRequest.post('/api/token/', loginBody)
         window.localStorage.setItem(ACCESS_TOKEN, response.data.access)
         window.localStorage.setItem(REFRESH_TOKEN, response.data.refresh)
+
+        authRequest.defaults.headers.Authorization = `Bearer ${window.localStorage.getItem(
+            ACCESS_TOKEN
+        )}`
         
         return await Promise.resolve(response.data)
     } catch (error) {
