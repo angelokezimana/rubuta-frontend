@@ -2,17 +2,13 @@
 import { useAuthStore } from './store'
 
 const authStore = useAuthStore()
-
-async function handleLogout() {
-    authStore.logout()
-}
 </script>
 
 <template>
     <nav
+        v-if="authStore.isAuthenticated"
         class="relative flex w-full flex-nowrap items-center justify-between bg-[#FBFBFB] py-2 text-neutral-500 shadow-lg hover:text-neutral-700 focus:text-neutral-700 dark:bg-neutral-600 lg:flex-wrap lg:justify-start lg:py-4"
         data-te-navbar-ref
-        v-if="authStore.user"
     >
         <div class="flex w-full flex-wrap items-center justify-between px-3">
             <div class="ml-2">
@@ -51,8 +47,8 @@ async function handleLogout() {
 
             <!-- Collapsible navbar container -->
             <div
-                class="!visible mt-2 hidden flex-grow basis-[100%] items-center lg:mt-0 lg:!flex lg:basis-auto"
                 id="navbarSupportedContent3"
+                class="!visible mt-2 hidden flex-grow basis-[100%] items-center lg:mt-0 lg:!flex lg:basis-auto"
                 data-te-collapse-item
             >
                 <!-- Left links -->
@@ -132,8 +128,8 @@ async function handleLogout() {
                     |
                     <button
                         type="button"
-                        @click="handleLogout"
                         class="p-0 text-neutral-500 transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-neutral-400"
+                        @click="authStore.logout"
                     >
                         Logout
                     </button></span
