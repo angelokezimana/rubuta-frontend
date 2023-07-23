@@ -23,7 +23,7 @@ const loginUser = async (email, password) => {
         authRequest.defaults.headers.Authorization = `Bearer ${window.localStorage.getItem(
             ACCESS_TOKEN
         )}`
-        
+
         return await Promise.resolve(response.data)
     } catch (error) {
         console.log(error)
@@ -68,7 +68,8 @@ const authRequest = axios.create({
     },
 })
 
-const logoutUser = () => {
+const logoutUser = async () => {
+    await authRequest.post('/api/v1/account/logout/')
     window.localStorage.removeItem(ACCESS_TOKEN)
     window.localStorage.removeItem(REFRESH_TOKEN)
     authRequest.defaults.headers.Authorization = ''

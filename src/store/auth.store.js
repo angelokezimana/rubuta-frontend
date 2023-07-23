@@ -1,39 +1,51 @@
 import { defineStore } from 'pinia'
-import { loginUser, logoutUser, authRequest } from '/src/services/api/auth'
+import jwt_decode from 'jwt-decode'
+import { loginUser, logoutUser } from '/src/services/api/auth'
 
 export const useAuthStore = defineStore({
     id: 'auth',
     state: () => ({
-        // initialize state from local storage to enable user to stay logged in
-        user: window.localStorage.getItem('user'),
+        // initialize state from local storage
+        token: window.localStorage.getItem('access_token'),
     }),
     getters: {
-        currentUser: (state) => state.user,
+        user: (state) => {
+            if (!state.token) return null
+
+            const decoded = jwt_decode(state.token)
+            return {
+                first_name: decoded.first_name,
+                last_name: decoded.last_name,
+                email: decoded.email,
+                birthdate: decoded.birthdate,
+                phone: decoded.phone,
+                image: decoded.image,
+            }
+        },
+        isAuthenticated() {
+            return this.user ? true : false
+        },
     },
     actions: {
         async login(data) {
             try {
                 await loginUser(data.email, data.password)
-                this.router.push('/profile')
+                /**
+                 * Use this when we don't want to reload the page
+                 * this.token = window.localStorage.getItem('access_token')
+                 */
+                this.router.push({ name: 'Profile' }).then(() => {
+                    this.router.go()
+                })
             } catch (error) {
                 console.log(error)
-                this.user = null
-                localStorage.removeItem('user')
-                logoutUser()
             }
         },
-        async getUser() {
-            const user = await authRequest.get('/api/v1/account/me')
-            // update pinia state
-            this.user = user.data
-            // store user details and jwt in local storage to keep user logged in between page refreshes
-            localStorage.setItem('user', JSON.stringify(user.data))
-        },
-        logout() {
-            this.user = null
-            localStorage.removeItem('user')
-            logoutUser()
-            this.router.push('/login')
+        async logout() {
+            await logoutUser()
+            this.router.push({ name: 'Login' }).then(() => {
+                this.router.go()
+            })
         },
     },
 })
