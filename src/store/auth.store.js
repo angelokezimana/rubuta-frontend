@@ -1,51 +1,60 @@
 import { defineStore } from 'pinia'
-import jwt_decode from 'jwt-decode'
-import { loginUser, logoutUser } from '/src/services/api/auth'
+import {
+    loginUser,
+    logoutUser,
+    authRequest,
+    ACCESS_TOKEN,
+    REFRESH_TOKEN,
+} from '/src/services/api/auth'
 
 export const useAuthStore = defineStore({
     id: 'auth',
     state: () => ({
-        // initialize state from local storage
-        token: window.localStorage.getItem('access_token'),
+        // initialize state from local storage to enable user to stay logged in
+        user: JSON.parse(window.localStorage.getItem('user')),
+        loginError: null,
     }),
     getters: {
-        user: (state) => {
-            if (!state.token) return null
-
-            const decoded = jwt_decode(state.token)
-            return {
-                first_name: decoded.first_name,
-                last_name: decoded.last_name,
-                email: decoded.email,
-                birthdate: decoded.birthdate,
-                phone: decoded.phone,
-                image: decoded.image,
-            }
-        },
-        isAuthenticated() {
-            return this.user ? true : false
-        },
+        currentUser: (state) => state.user,
     },
     actions: {
         async login(data) {
             try {
-                await loginUser(data.email, data.password)
+                const response = await loginUser(data.email, data.password)
+
                 /**
                  * Use this when we don't want to reload the page
-                 * this.token = window.localStorage.getItem('access_token')
+                 * await this.getUser()
                  */
-                this.router.push({ name: 'Profile' }).then(() => {
-                    this.router.go()
-                })
+                this.loginError = null
+                await this.getUser()
+                this.router.push({ name: 'Profile' })
+                /**
+                 * Use this to reload the page
+                 * .then(() => {
+                 *      this.router.go()
+                 * })
+                 */
             } catch (error) {
-                console.log(error)
+                this.loginError = error.response.data
+                this.user = null
+                window.localStorage.removeItem('user')
+                window.localStorage.removeItem(ACCESS_TOKEN)
+                window.localStorage.removeItem(REFRESH_TOKEN)
             }
         },
+        async getUser() {
+            const user = await authRequest.get('/api/v1/users/me')
+            // update pinia state
+            this.user = user.data
+            // store user details and jwt in local storage to keep user logged in between page refreshes
+            window.localStorage.setItem('user', JSON.stringify(user.data))
+        },
         async logout() {
+            this.user = null
+            window.localStorage.removeItem('user')
             await logoutUser()
-            this.router.push({ name: 'Login' }).then(() => {
-                this.router.go()
-            })
+            this.router.push({ name: 'Home' })
         },
     },
 })

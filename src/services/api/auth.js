@@ -16,17 +16,19 @@ const tokenRequest = axios.create({
 const loginUser = async (email, password) => {
     try {
         const loginBody = { email, password }
-        const response = await tokenRequest.post('/api/token/', loginBody)
+        const response = await tokenRequest.post(
+            '/api/v1/jwt/create/',
+            loginBody
+        )
         window.localStorage.setItem(ACCESS_TOKEN, response.data.access)
         window.localStorage.setItem(REFRESH_TOKEN, response.data.refresh)
 
-        authRequest.defaults.headers.Authorization = `Bearer ${window.localStorage.getItem(
+        authRequest.defaults.headers.Authorization = `JWT ${window.localStorage.getItem(
             ACCESS_TOKEN
         )}`
 
         return await Promise.resolve(response.data)
     } catch (error) {
-        console.log(error)
         return await Promise.reject(error)
     }
 }
@@ -35,7 +37,7 @@ const refreshToken = async () => {
     const refreshBody = { refresh: window.localStorage.getItem(REFRESH_TOKEN) }
     try {
         const response = await tokenRequest.post(
-            '/api/token/refresh/',
+            '/api/v1/jwt/refresh/',
             refreshBody
         )
         window.localStorage.setItem(ACCESS_TOKEN, response.data.access)
@@ -63,13 +65,15 @@ const authRequest = axios.create({
     baseURL: BASE_URL,
     timeout: 5000,
     headers: {
-        Authorization: `Bearer ${window.localStorage.getItem(ACCESS_TOKEN)}`,
+        Authorization: `JWT ${window.localStorage.getItem(ACCESS_TOKEN)}`,
         'Content-Type': 'application/json',
     },
 })
 
 const logoutUser = async () => {
-    await authRequest.post('/api/v1/account/logout/')
+    await authRequest.post('/api/v1/jwt/delete/', {
+        refresh_token: window.localStorage.getItem(REFRESH_TOKEN),
+    })
     window.localStorage.removeItem(ACCESS_TOKEN)
     window.localStorage.removeItem(REFRESH_TOKEN)
     authRequest.defaults.headers.Authorization = ''
@@ -81,7 +85,7 @@ const errorInterceptor = async (error) => {
     if (isCorrectRefreshError(status)) {
         try {
             await refreshToken()
-            const headerAuthorization = `Bearer ${window.localStorage.getItem(
+            const headerAuthorization = `JWT ${window.localStorage.getItem(
                 ACCESS_TOKEN
             )}`
             authRequest.defaults.headers.Authorization = headerAuthorization
