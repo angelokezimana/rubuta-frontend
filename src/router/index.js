@@ -1,27 +1,44 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '/src/views/Login.vue'
-import SignUp from '/src/views/SignUp.vue'
-import Profile from '/src/views/Profile.vue'
-import { ACCESS_TOKEN, REFRESH_TOKEN } from '../services/api/auth'
+import HomePage from '/src/views/HomePage.vue'
 import { useAuthStore } from '../store'
-
-const PUBLIC_PATHS = ['/login', '/sign-up']
 
 const routes = [
     {
+        path: '/',
+        name: 'Home',
+        component: HomePage,
+    },
+    {
         path: '/login',
         name: 'Login',
-        component: Login,
+        component: () => import('/src/views/LogIn.vue'),
+        meta: {
+            requiresGuest: true,
+        },
     },
     {
         path: '/sign-up',
         name: 'SignUp',
-        component: SignUp,
+        component: () => import('/src/views/SignUp.vue'),
+        meta: {
+            requiresGuest: true,
+        },
+    },
+    {
+        path: '/reset-password',
+        name: 'ResetPassword',
+        component: () => import('/src/views/ResetPassword.vue'),
+        meta: {
+            requiresGuest: true,
+        },
     },
     {
         path: '/profile',
         name: 'Profile',
-        component: Profile,
+        component: () => import('/src/views/UserProfile.vue'),
+        meta: {
+            requiresAuth: true,
+        },
     },
 ]
 
@@ -30,20 +47,15 @@ const router = createRouter({
     routes,
 })
 
-const unAuthenticatedAndPrivatePage = (path) =>
-    !PUBLIC_PATHS.includes(path) &&
-    !(ACCESS_TOKEN in window.localStorage) &&
-    !(REFRESH_TOKEN in window.localStorage)
-
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
     const authStore = useAuthStore()
 
-    if (unAuthenticatedAndPrivatePage(to.path)) {
-        //authStore.returnUrl = to.fullPath
-        authStore.user = null
-        next('/login')
-    }else{
-        next()
+    if (to.meta.requiresAuth && !authStore.currentUser) {
+        return { name: 'Login', query: { redirect: to.fullPath } }
+    }
+
+    if (to.meta.requiresGuest && authStore.currentUser) {
+        return { name: 'Home' }
     }
 })
 
