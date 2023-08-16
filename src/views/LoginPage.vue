@@ -1,4 +1,5 @@
 <script setup>
+import NavBar from '/src/components/NavBar.vue'
 import { ref, watch, onMounted } from 'vue'
 import { useAuthStore } from '../store'
 
@@ -21,6 +22,7 @@ watch(
 </script>
 
 <template>
+    <NavBar />
     <div>
         <div>
             <h2>Sign in to your account</h2>
