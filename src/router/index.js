@@ -25,6 +25,14 @@ const routes = [
         },
     },
     {
+        path: '/activate/:uid/:token',
+        name: 'ActivateAccount',
+        component: () => import('/src/views/AccountActivation.vue'),
+        meta: {
+            requiresGuest: true,
+        },
+    },
+    {
         path: '/reset-password',
         name: 'ResetPassword',
         component: () => import('/src/views/ResetPassword.vue'),

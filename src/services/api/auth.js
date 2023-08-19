@@ -13,6 +13,19 @@ const tokenRequest = axios.create({
     },
 })
 
+
+
+const activateAccount = async (activationUid, activationToken) => {
+    try {
+        await tokenRequest.post('/api/v1/users/activation/', {
+            uid: activationUid,
+            token: activationToken,
+        })
+    } catch (error) {
+        return await Promise.reject(error)
+    }
+}
+
 const loginUser = async (email, password) => {
     try {
         const loginBody = { email, password }
