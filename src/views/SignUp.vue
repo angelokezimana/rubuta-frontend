@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { tokenRequest } from '../services/api/auth'
+import NavBar from '/src/components/NavBar.vue'
+import { ref, watch, onMounted } from 'vue'
+import { useAuthStore } from '../store'
 
-const router = useRouter()
+const authStore = useAuthStore()
 
 const form = ref({
     first_name: '',
@@ -13,40 +13,32 @@ const form = ref({
     re_password: '',
 })
 
-const errors = ref([])
+onMounted(() => {
+    authStore.authErrors = []
+})
 
-const submitForm = async () => {
-    const formData = {
-        first_name: form.value.first_name,
-        last_name: form.value.last_name,
-        email: form.value.email,
-        password: form.value.password,
-        re_password: form.value.re_password,
+watch(
+    () => authStore.errors,
+    (newStateValue, oldStateValue) => {
+        form.value.password = ''
+        form.value.re_password = ''
     }
-
-    try {
-        await tokenRequest.post('/api/v1/users/', formData)
-        router.push({
-            name: 'Login',
-        })
-    } catch (error) {
-        errors.value = error.response.data
-    }
-}
+)
 </script>
 <template>
+    <NavBar />
     <div>
         <div>
             <h2>Create your account</h2>
         </div>
 
         <div>
-            <ul v-if="errors" style="color: rgb(214, 16, 16)">
-                <li v-for="(value, index) in errors" :key="index">
+            <ul v-if="authStore.errors.non_field_errors" style="color: rgb(214, 16, 16)">
+                <li v-for="(value, index) in authStore.errors.non_field_errors" :key="index">
                     {{ value }}
                 </li>
             </ul>
-            <form @submit.prevent="submitForm">
+            <form @submit.prevent="authStore.register(form)">
                 <div>
                     <label for="first_name">First name</label>
                     <div>
@@ -59,6 +51,17 @@ const submitForm = async () => {
                             required=""
                         />
                     </div>
+                        <ul
+                            v-if="authStore.errors.first_name"
+                            style="color: rgb(214, 16, 16)"
+                        >
+                            <li
+                                v-for="(value, index) in authStore.errors.first_name"
+                                :key="index"
+                            >
+                                {{ value }}
+                            </li>
+                        </ul>
                 </div>
 
                 <div>
@@ -73,6 +76,17 @@ const submitForm = async () => {
                             required=""
                         />
                     </div>
+                    <ul
+                            v-if="authStore.errors.last_name"
+                            style="color: rgb(214, 16, 16)"
+                        >
+                            <li
+                                v-for="(value, index) in authStore.errors.last_name"
+                                :key="index"
+                            >
+                                {{ value }}
+                            </li>
+                        </ul>
                 </div>
 
                 <div>
@@ -87,6 +101,17 @@ const submitForm = async () => {
                             required=""
                         />
                     </div>
+                    <ul
+                            v-if="authStore.errors.email"
+                            style="color: rgb(214, 16, 16)"
+                        >
+                            <li
+                                v-for="(value, index) in authStore.errors.email"
+                                :key="index"
+                            >
+                                {{ value }}
+                            </li>
+                        </ul>
                 </div>
 
                 <div>
@@ -101,6 +126,17 @@ const submitForm = async () => {
                             required=""
                         />
                     </div>
+                    <ul
+                            v-if="authStore.errors.password"
+                            style="color: rgb(214, 16, 16)"
+                        >
+                            <li
+                                v-for="(value, index) in authStore.errors.password"
+                                :key="index"
+                            >
+                                {{ value }}
+                            </li>
+                        </ul>
                 </div>
 
                 <div>

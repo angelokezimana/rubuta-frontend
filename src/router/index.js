@@ -11,7 +11,7 @@ const routes = [
     {
         path: '/login',
         name: 'Login',
-        component: () => import('/src/views/LogIn.vue'),
+        component: () => import('/src/views/LoginPage.vue'),
         meta: {
             requiresGuest: true,
         },
@@ -58,11 +58,11 @@ const router = createRouter({
 router.beforeEach((to, from) => {
     const authStore = useAuthStore()
 
-    if (to.meta.requiresAuth && !authStore.currentUser) {
+    if (to.meta.requiresAuth && !authStore.user) {
         return { name: 'Login', query: { redirect: to.fullPath } }
     }
 
-    if (to.meta.requiresGuest && authStore.currentUser) {
+    if (to.meta.requiresGuest && authStore.user) {
         return { name: 'Home' }
     }
 })

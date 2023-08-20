@@ -1,10 +1,12 @@
 <script setup>
+import NavBar from '/src/components/NavBar.vue'
 import { useAuthStore } from '../store'
 
 const authStore = useAuthStore()
 </script>
 
 <template>
+    <NavBar />
     <div v-if="authStore.currentUser">
         <h1>Profile</h1>
         <p>
