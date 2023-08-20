@@ -13,6 +13,40 @@ const tokenRequest = axios.create({
     },
 })
 
+const registerUser = async (
+    first_name,
+    last_name,
+    email,
+    password,
+    re_password
+) => {
+    try {
+        const registerBody = {
+            first_name,
+            last_name,
+            email,
+            password,
+            re_password,
+        }
+        const response = await tokenRequest.post('/api/v1/users/', registerBody)
+
+        return await Promise.resolve(response.data)
+    } catch (error) {
+        return await Promise.reject(error)
+    }
+}
+
+const activateAccount = async (activationUid, activationToken) => {
+    try {
+        await tokenRequest.post('/api/v1/users/activation/', {
+            uid: activationUid,
+            token: activationToken,
+        })
+    } catch (error) {
+        return await Promise.reject(error)
+    }
+}
+
 const loginUser = async (email, password) => {
     try {
         const loginBody = { email, password }
@@ -70,8 +104,16 @@ const authRequest = axios.create({
     },
 })
 
+const getUser = async () => {
+    try {
+        return await authRequest.get('/api/v1/users/me')
+    } catch (error) {
+        return await Promise.reject(error)
+    }
+}
+
 const logoutUser = async () => {
-    await authRequest.post('/api/v1/jwt/delete/', {
+    await authRequest.post('/api/v1/jwt/destroy/', {
         refresh_token: window.localStorage.getItem(REFRESH_TOKEN),
     })
     window.localStorage.removeItem(ACCESS_TOKEN)
@@ -92,8 +134,10 @@ const errorInterceptor = async (error) => {
             originalRequest.headers.Authorization = headerAuthorization
             return await authRequest(originalRequest)
         } catch (tokenRefreshError) {
-            // if token refresh fails, logout the user to avoid potential security risks.
-            logoutUser()
+            // if token refresh fails, destroy the tokens.
+            window.localStorage.removeItem(ACCESS_TOKEN)
+            window.localStorage.removeItem(REFRESH_TOKEN)
+            authRequest.defaults.headers.Authorization = ''
             return await Promise.reject(tokenRefreshError)
         }
     }
@@ -107,7 +151,10 @@ authRequest.interceptors.response.use(
 
 export {
     tokenRequest,
+    registerUser,
+    activateAccount,
     loginUser,
+    getUser,
     logoutUser,
     refreshToken,
     authRequest,

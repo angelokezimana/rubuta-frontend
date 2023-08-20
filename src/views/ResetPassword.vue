@@ -1,4 +1,5 @@
 <script setup>
+import NavBar from '/src/components/NavBar.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { tokenRequest } from '../services/api/auth'
@@ -23,6 +24,7 @@ const submitForm = async () => {
 </script>
 
 <template>
+    <NavBar />
     <div>
         <div>
             <h2>Reset your password</h2>

@@ -25,6 +25,14 @@ const routes = [
         },
     },
     {
+        path: '/activate/:uid/:token',
+        name: 'ActivateAccount',
+        component: () => import('/src/views/AccountActivation.vue'),
+        meta: {
+            requiresGuest: true,
+        },
+    },
+    {
         path: '/reset-password',
         name: 'ResetPassword',
         component: () => import('/src/views/ResetPassword.vue'),
@@ -50,11 +58,11 @@ const router = createRouter({
 router.beforeEach((to, from) => {
     const authStore = useAuthStore()
 
-    if (to.meta.requiresAuth && !authStore.currentUser) {
+    if (to.meta.requiresAuth && !authStore.user) {
         return { name: 'Login', query: { redirect: to.fullPath } }
     }
 
-    if (to.meta.requiresGuest && authStore.currentUser) {
+    if (to.meta.requiresGuest && authStore.user) {
         return { name: 'Home' }
     }
 })

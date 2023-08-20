@@ -1,4 +1,5 @@
 <script setup>
+import NavBar from '/src/components/NavBar.vue'
 import { ref, watch, onMounted } from 'vue'
 import { useAuthStore } from '../store'
 
@@ -9,11 +10,11 @@ const form = ref({
 const authStore = useAuthStore()
 
 onMounted(() => {
-    authStore.loginError = null
+    authStore.authErrors = []
 })
 
 watch(
-    () => authStore.loginError,
+    () => authStore.errors,
     (newStateValue, oldStateValue) => {
         form.value.password = ''
     }
@@ -21,17 +22,22 @@ watch(
 </script>
 
 <template>
+    <NavBar />
     <div>
         <div>
             <h2>Sign in to your account</h2>
         </div>
 
         <div>
-            <ul v-if="authStore.loginError" style="color: rgb(214, 16, 16)">
-                <li v-for="(value, index) in authStore.loginError" :key="index">
-                    <span v-if="index != 'detail'">{{ index.charAt(0).toUpperCase() + index.slice(1) }} : </span>{{ value }}
-                </li>
-            </ul>
+            <div v-if="authStore.errors.detail" style="color: rgb(214, 16, 16)">
+                {{ authStore.errors.detail }}
+            </div>
+            <div
+                v-if="authStore.status"
+                style="background-color: rgb(16, 214, 42); color: white"
+            >
+                {{ authStore.status }}
+            </div>
             <form @submit.prevent="authStore.login(form)">
                 <div>
                     <label for="email">Email address</label>
@@ -45,13 +51,26 @@ watch(
                             required=""
                         />
                     </div>
+                    <ul
+                        v-if="authStore.errors.email"
+                        style="color: rgb(214, 16, 16)"
+                    >
+                        <li
+                            v-for="(value, index) in authStore.errors.email"
+                            :key="index"
+                        >
+                            {{ value }}
+                        </li>
+                    </ul>
                 </div>
 
                 <div>
                     <div>
                         <label for="password">Password</label>
                         <div>
-                            <router-link :to="{ name: 'ResetPassword' }">Forgot password?</router-link>
+                            <router-link :to="{ name: 'ResetPassword' }"
+                                >Forgot password?</router-link
+                            >
                         </div>
                     </div>
                     <div>
@@ -64,6 +83,17 @@ watch(
                             required=""
                         />
                     </div>
+                    <ul
+                        v-if="authStore.errors.password"
+                        style="color: rgb(214, 16, 16)"
+                    >
+                        <li
+                            v-for="(value, index) in authStore.errors.password"
+                            :key="index"
+                        >
+                            {{ value }}
+                        </li>
+                    </ul>
                 </div>
 
                 <div>
