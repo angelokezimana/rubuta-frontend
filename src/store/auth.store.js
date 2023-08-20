@@ -41,10 +41,6 @@ export const useAuthStore = defineStore({
                  */
             } catch (error) {
                 this.authErrors = error.response.data
-                this.authUser = null
-                window.localStorage.removeItem('user')
-                window.localStorage.removeItem(ACCESS_TOKEN)
-                window.localStorage.removeItem(REFRESH_TOKEN)
             }
         },
         async register(data) {
